@@ -7,13 +7,15 @@
         "php": "~8.2.0||~8.3.0||~8.4.0",
         "magento/framework": ">=103.0",
         "magento/module-catalog": ">=104.0",
+        "magento/module-catalog-rule": ">=101.2",
         "magento/module-store": ">=101.0",
         "magento/module-eav": ">=102.0",
         "magento/module-backend": ">=102.0",
         "magento/module-ui": ">=101.0"
     },
     "suggest": {
-        "magento/module-graph-ql": "Exposes product labels in the GraphQL products query"
+        "magento/module-graph-ql": "Exposes product labels in the GraphQL products query",
+        "magento/module-catalog-graphql": "Required for the magendoo_labels GraphQL field (the schema extends its ProductInterface)"
     },
     "autoload": {
         "files": [
