@@ -72,7 +72,7 @@ class LabelRepository implements LabelRepositoryInterface
             $this->invalidateIndexer();
         }
         if ($visibilityChanged) {
-            $this->flushManualAssigneePages((int)$label->getId());
+            $this->flushAssigneePages((int)$label->getId());
         }
         return $label;
     }
@@ -188,21 +188,46 @@ class LabelRepository implements LabelRepositoryInterface
     }
 
     /**
-     * Flush the cached pages of every product manually assigned to a label.
+     * Flush the cached pages of every product the label is assigned to.
      *
-     * Manual assignments live on the global (store 0) row of the
-     * magendoo_product_labels attribute; one FIND_IN_SET lookup finds the
-     * assignees so their PDP/listing pages flush immediately (computed
-     * assignees are flushed by the indexer diff sync after the invalidation).
+     * Covers both assignment surfaces directly: the manual multiselect
+     * attribute and the indexer-owned assignment table. The assignment table
+     * must be read here rather than left to the indexer diff sync, because
+     * its rows are placement-agnostic — a show_on_plp/show_on_pdp transition
+     * changes no rows, so a reindex would produce an empty diff and flush
+     * nothing.
      *
      * @param int $labelId
      * @return void
      */
-    private function flushManualAssigneePages(int $labelId): void
+    private function flushAssigneePages(int $labelId): void
+    {
+        $productIds = array_values(array_unique(array_merge(
+            $this->getManualAssigneeIds($labelId),
+            $this->getComputedAssigneeIds($labelId)
+        )));
+        if (!$productIds) {
+            return;
+        }
+        $this->cacheContext->registerEntities(Product::CACHE_TAG, $productIds);
+        $this->eventManager->dispatch('clean_cache_by_tags', ['object' => $this->cacheContext]);
+    }
+
+    /**
+     * Products holding the label in the manual multiselect attribute.
+     *
+     * Manual assignments live on the global (store 0) row of the
+     * magendoo_product_labels attribute; FIND_IN_SET is exact-element on the
+     * comma-separated value.
+     *
+     * @param int $labelId
+     * @return int[]
+     */
+    private function getManualAssigneeIds(int $labelId): array
     {
         $attribute = $this->eavConfig->getAttribute(Product::ENTITY, AddProductLabelsAttribute::ATTRIBUTE_CODE);
         if (!$attribute || !$attribute->getAttributeId()) {
-            return;
+            return [];
         }
         $connection = $this->resource->getConnection();
         $select = $connection->select()
@@ -210,12 +235,23 @@ class LabelRepository implements LabelRepositoryInterface
             ->where('attribute_id = ?', (int)$attribute->getAttributeId())
             ->where('store_id = ?', 0)
             ->where('FIND_IN_SET(?, value)', (string)$labelId);
-        $productIds = array_map('intval', $connection->fetchCol($select));
-        if (!$productIds) {
-            return;
-        }
-        $this->cacheContext->registerEntities(Product::CACHE_TAG, $productIds);
-        $this->eventManager->dispatch('clean_cache_by_tags', ['object' => $this->cacheContext]);
+        return array_map('intval', $connection->fetchCol($select));
+    }
+
+    /**
+     * Products holding the label in the indexer-owned assignment table.
+     *
+     * @param int $labelId
+     * @return int[]
+     */
+    private function getComputedAssigneeIds(int $labelId): array
+    {
+        $connection = $this->resource->getConnection();
+        $select = $connection->select()
+            ->from($this->resource->getTable('magendoo_product_label_assignment'), ['product_id'])
+            ->distinct()
+            ->where('label_id = ?', $labelId);
+        return array_map('intval', $connection->fetchCol($select));
     }
 
     /**
