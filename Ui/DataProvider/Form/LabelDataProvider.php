@@ -75,6 +75,7 @@ class LabelDataProvider extends ModifierPoolDataProvider
 
         $persisted = $this->dataPersistor->get('magendoo_productlabels_label');
         if (!empty($persisted)) {
+            /** @var Label $label */
             $label = $this->collection->getNewEmptyItem();
             $label->setData($persisted);
             $this->loadedData[$label->getId()] = $label->getData();
