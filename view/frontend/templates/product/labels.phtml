@@ -1,0 +1,27 @@
+<?php
+/**
+ * Magendoo ProductLabels - PDP badge overlay template
+ *
+ * @copyright Copyright (c) Magendoo (https://magendoo.com)
+ * @license   https://opensource.org/licenses/OSL-3.0 OSL-3.0
+ */
+
+/** @var \Magendoo\ProductLabels\Block\Product\Labels $block */
+/** @var \Magento\Framework\Escaper $escaper */
+
+$labelsByPosition = [];
+foreach ($block->getLabels() as $label) {
+    $labelsByPosition[$label->getPosition()][] = $label;
+}
+?>
+<div class="magendoo-product-labels magendoo-product-labels-pdp" aria-hidden="false">
+    <?php foreach ($labelsByPosition as $position => $labels): ?>
+        <div class="magendoo-pl-corner magendoo-pl-<?= $escaper->escapeHtmlAttr($position) ?>">
+            <?php foreach ($labels as $label): ?>
+                <span class="magendoo-product-label magendoo-product-label-<?= $escaper->escapeHtmlAttr($label->getCode()) ?>"
+                      style="background-color: <?= $escaper->escapeHtmlAttr($label->getBackgroundColor()) ?>; color: <?= $escaper->escapeHtmlAttr($label->getTextColor()) ?>;"
+                      role="status"><?= $escaper->escapeHtml($label->getLabelText()) ?></span>
+            <?php endforeach; ?>
+        </div>
+    <?php endforeach; ?>
+</div>

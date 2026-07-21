@@ -1,0 +1,110 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Magendoo ProductLabels - Declarative schema
+ *
+ * magendoo_product_label            label definitions; `code` is the stable cross-system identifier
+ * magendoo_product_label_store      per-store-view display text overrides
+ * magendoo_product_label_assignment computed (rule-based) assignments, owned exclusively by the
+ *                                   magendoo_product_labels indexer; manual assignments live in the
+ *                                   magendoo_product_labels product attribute and are never written here
+ *
+ * @copyright Copyright (c) Magendoo (https://magendoo.com)
+ * @license   https://opensource.org/licenses/OSL-3.0 OSL-3.0
+ */
+-->
+<schema xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Setup/Declaration/Schema/etc/schema.xsd">
+    <table name="magendoo_product_label" resource="default" engine="innodb" comment="Magendoo Product Label">
+        <column xsi:type="int" name="label_id" unsigned="true" nullable="false" identity="true"
+                comment="Label ID"/>
+        <column xsi:type="varchar" name="code" nullable="false" length="64"
+                comment="Stable Label Code (integration identifier)"/>
+        <column xsi:type="varchar" name="name" nullable="false" length="255" comment="Admin Label Name"/>
+        <column xsi:type="smallint" name="is_active" unsigned="true" nullable="false" default="1"
+                comment="Is Label Active"/>
+        <column xsi:type="int" name="priority" unsigned="false" nullable="false" default="0"
+                comment="Render Priority (lower renders first)"/>
+        <column xsi:type="varchar" name="label_text" nullable="false" length="255"
+                comment="Default Storefront Text"/>
+        <column xsi:type="varchar" name="text_color" nullable="false" length="7" default="#FFFFFF"
+                comment="Badge Text Color (hex)"/>
+        <column xsi:type="varchar" name="background_color" nullable="false" length="7" default="#E02B27"
+                comment="Badge Background Color (hex)"/>
+        <column xsi:type="varchar" name="position" nullable="false" length="20" default="top-left"
+                comment="Badge Position"/>
+        <column xsi:type="smallint" name="show_on_plp" unsigned="true" nullable="false" default="1"
+                comment="Show on Product Listing"/>
+        <column xsi:type="smallint" name="show_on_pdp" unsigned="true" nullable="false" default="1"
+                comment="Show on Product Page"/>
+        <column xsi:type="varchar" name="rule_type" nullable="false" length="20" default="none"
+                comment="Computed Rule Type (none/is_new/on_sale)"/>
+        <column xsi:type="timestamp" name="created_at" on_update="false" nullable="false"
+                default="CURRENT_TIMESTAMP" comment="Created At"/>
+        <column xsi:type="timestamp" name="updated_at" on_update="true" nullable="false"
+                default="CURRENT_TIMESTAMP" comment="Updated At"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="label_id"/>
+        </constraint>
+        <constraint xsi:type="unique" referenceId="MAGENDOO_PRODUCT_LABEL_CODE">
+            <column name="code"/>
+        </constraint>
+        <index referenceId="MAGENDOO_PRODUCT_LABEL_IS_ACTIVE" indexType="btree">
+            <column name="is_active"/>
+        </index>
+    </table>
+    <table name="magendoo_product_label_store" resource="default" engine="innodb"
+           comment="Magendoo Product Label Store Text Override">
+        <column xsi:type="int" name="override_id" unsigned="true" nullable="false" identity="true"
+                comment="Override ID"/>
+        <column xsi:type="int" name="label_id" unsigned="true" nullable="false" comment="Label ID"/>
+        <column xsi:type="smallint" name="store_id" unsigned="true" nullable="false" comment="Store View ID"/>
+        <column xsi:type="varchar" name="label_text" nullable="false" length="255"
+                comment="Storefront Text Override"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="override_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="MAGENDOO_PRODUCT_LABEL_STORE_LABEL_ID_MAGENDOO_PRODUCT_LABEL_LABEL_ID"
+                    table="magendoo_product_label_store" column="label_id"
+                    referenceTable="magendoo_product_label" referenceColumn="label_id" onDelete="CASCADE"/>
+        <constraint xsi:type="foreign" referenceId="MAGENDOO_PRODUCT_LABEL_STORE_STORE_ID_STORE_STORE_ID"
+                    table="magendoo_product_label_store" column="store_id"
+                    referenceTable="store" referenceColumn="store_id" onDelete="CASCADE"/>
+        <constraint xsi:type="unique" referenceId="MAGENDOO_PRODUCT_LABEL_STORE_LABEL_ID_STORE_ID">
+            <column name="label_id"/>
+            <column name="store_id"/>
+        </constraint>
+        <index referenceId="MAGENDOO_PRODUCT_LABEL_STORE_STORE_ID" indexType="btree">
+            <column name="store_id"/>
+        </index>
+    </table>
+    <table name="magendoo_product_label_assignment" resource="default" engine="innodb"
+           comment="Magendoo Product Label Computed Assignment (indexer-owned)">
+        <column xsi:type="int" name="assignment_id" unsigned="true" nullable="false" identity="true"
+                comment="Assignment ID"/>
+        <column xsi:type="int" name="label_id" unsigned="true" nullable="false" comment="Label ID"/>
+        <column xsi:type="int" name="product_id" unsigned="true" nullable="false" comment="Product Entity ID"/>
+        <column xsi:type="smallint" name="store_id" unsigned="true" nullable="false" comment="Store View ID"/>
+        <constraint xsi:type="primary" referenceId="PRIMARY">
+            <column name="assignment_id"/>
+        </constraint>
+        <constraint xsi:type="foreign" referenceId="MAGENDOO_PRD_LBL_ASSIGNMENT_LBL_ID_MAGENDOO_PRD_LBL_LBL_ID"
+                    table="magendoo_product_label_assignment" column="label_id"
+                    referenceTable="magendoo_product_label" referenceColumn="label_id" onDelete="CASCADE"/>
+        <constraint xsi:type="foreign" referenceId="MAGENDOO_PRD_LBL_ASSIGNMENT_PRD_ID_CAT_PRD_ENTT_ENTT_ID"
+                    table="magendoo_product_label_assignment" column="product_id"
+                    referenceTable="catalog_product_entity" referenceColumn="entity_id" onDelete="CASCADE"/>
+        <constraint xsi:type="foreign" referenceId="MAGENDOO_PRD_LBL_ASSIGNMENT_STORE_ID_STORE_STORE_ID"
+                    table="magendoo_product_label_assignment" column="store_id"
+                    referenceTable="store" referenceColumn="store_id" onDelete="CASCADE"/>
+        <constraint xsi:type="unique" referenceId="MAGENDOO_PRD_LBL_ASSIGNMENT_LBL_ID_PRD_ID_STORE_ID">
+            <column name="label_id"/>
+            <column name="product_id"/>
+            <column name="store_id"/>
+        </constraint>
+        <index referenceId="MAGENDOO_PRD_LBL_ASSIGNMENT_PRD_ID_STORE_ID" indexType="btree">
+            <column name="product_id"/>
+            <column name="store_id"/>
+        </index>
+    </table>
+</schema>

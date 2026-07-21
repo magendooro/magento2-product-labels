@@ -1,0 +1,21 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Magendoo ProductLabels - Frontend event observers
+ *
+ * @copyright Copyright (c) Magendoo (https://magendoo.com)
+ * @license   https://opensource.org/licenses/OSL-3.0 OSL-3.0
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Event/etc/events.xsd">
+    <!--
+        Fired by ListProduct before rendering with the loaded collection:
+        preload label assignments for the whole page in one batch so the
+        per-tile image plugin never runs an N+1 query.
+    -->
+    <event name="catalog_block_product_list_collection">
+        <observer name="magendoo_productlabels_preload"
+                  instance="Magendoo\ProductLabels\Observer\PreloadListLabelsObserver"/>
+    </event>
+</config>

@@ -1,0 +1,64 @@
+<?php
+/**
+ * Magendoo ProductLabels - product image with badge overlay (PLP)
+ *
+ * Mirrors Magento_Catalog::product/image_with_borders.phtml and layers the
+ * label badges over the image. Selected by AddLabelsToImagePlugin only when
+ * the product actually has listing labels.
+ *
+ * @copyright Copyright (c) Magendoo (https://magendoo.com)
+ * @license   https://opensource.org/licenses/OSL-3.0 OSL-3.0
+ */
+
+/** @var $block \Magento\Catalog\Block\Product\Image */
+/** @var $escaper \Magento\Framework\Escaper */
+/** @var \Magento\Framework\View\Helper\SecureHtmlRenderer $secureRenderer */
+$width = (int)$block->getWidth();
+$height = (int)$block->getHeight();
+$paddingBottom = $block->getRatio() * 100;
+$labelsByPosition = [];
+foreach ((array)$block->getData('magendoo_labels') as $labelRow) {
+    $labelsByPosition[(string)$labelRow['position']][] = $labelRow;
+}
+?>
+<span class="product-image-container magendoo-has-labels product-image-container-<?= /* @noEscape */ $block->getProductId() ?>">
+    <span class="product-image-wrapper">
+        <img class="<?= $escaper->escapeHtmlAttr($block->getClass()) ?>"
+            <?php foreach ($block->getCustomAttributes() as $name => $value): ?>
+                <?= $escaper->escapeHtmlAttr($name) ?>="<?= $escaper->escapeHtml($value) ?>"
+            <?php endforeach; ?>
+            src="<?= $escaper->escapeUrl($block->getImageUrl()) ?>"
+            loading="lazy"
+            width="<?= $escaper->escapeHtmlAttr($block->getWidth()) ?>"
+            height="<?= $escaper->escapeHtmlAttr($block->getHeight()) ?>"
+            alt="<?= $escaper->escapeHtmlAttr($block->getLabel()) ?>"/></span>
+    <span class="magendoo-product-labels magendoo-product-labels-plp">
+        <?php foreach ($labelsByPosition as $position => $labels): ?>
+            <span class="magendoo-pl-corner magendoo-pl-<?= $escaper->escapeHtmlAttr($position) ?>">
+                <?php foreach ($labels as $labelRow): ?>
+                    <span class="magendoo-product-label magendoo-product-label-<?= $escaper->escapeHtmlAttr((string)$labelRow['code']) ?>"
+                          style="background-color: <?= $escaper->escapeHtmlAttr((string)$labelRow['background_color']) ?>; color: <?= $escaper->escapeHtmlAttr((string)$labelRow['text_color']) ?>;"><?= $escaper->escapeHtml((string)$labelRow['text']) ?></span>
+                <?php endforeach; ?>
+            </span>
+        <?php endforeach; ?>
+    </span>
+</span>
+<?php
+$styles = <<<STYLE
+.product-image-container-{$block->getProductId()} {
+    width: {$width}px;
+    height: auto;
+    aspect-ratio: {$width} / {$height};
+}
+.product-image-container-{$block->getProductId()} span.product-image-wrapper {
+    height: 100%;
+    width: 100%;
+}
+@supports not (aspect-ratio: auto) {
+    .product-image-container-{$block->getProductId()} span.product-image-wrapper {
+        padding-bottom: {$paddingBottom}%;
+    }
+}
+STYLE;
+?>
+<?= /* @noEscape */ $secureRenderer->renderTag('style', [], $styles, false) ?>

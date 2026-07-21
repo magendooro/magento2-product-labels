@@ -1,0 +1,62 @@
+{
+    "magendoo_product_label": {
+        "column": {
+            "label_id": true,
+            "code": true,
+            "name": true,
+            "is_active": true,
+            "priority": true,
+            "label_text": true,
+            "text_color": true,
+            "background_color": true,
+            "position": true,
+            "show_on_plp": true,
+            "show_on_pdp": true,
+            "rule_type": true,
+            "created_at": true,
+            "updated_at": true
+        },
+        "index": {
+            "MAGENDOO_PRODUCT_LABEL_IS_ACTIVE": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "MAGENDOO_PRODUCT_LABEL_CODE": true
+        }
+    },
+    "magendoo_product_label_store": {
+        "column": {
+            "override_id": true,
+            "label_id": true,
+            "store_id": true,
+            "label_text": true
+        },
+        "index": {
+            "MAGENDOO_PRODUCT_LABEL_STORE_STORE_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "MAGENDOO_PRD_LBL_STORE_LBL_ID_MAGENDOO_PRD_LBL_LBL_ID": true,
+            "MAGENDOO_PRODUCT_LABEL_STORE_STORE_ID_STORE_STORE_ID": true,
+            "MAGENDOO_PRODUCT_LABEL_STORE_LABEL_ID_STORE_ID": true
+        }
+    },
+    "magendoo_product_label_assignment": {
+        "column": {
+            "assignment_id": true,
+            "label_id": true,
+            "product_id": true,
+            "store_id": true
+        },
+        "index": {
+            "MAGENDOO_PRODUCT_LABEL_ASSIGNMENT_PRODUCT_ID_STORE_ID": true
+        },
+        "constraint": {
+            "PRIMARY": true,
+            "MAGENDOO_PRD_LBL_ASSIGNMENT_LBL_ID_MAGENDOO_PRD_LBL_LBL_ID": true,
+            "MAGENDOO_PRD_LBL_ASSIGNMENT_PRD_ID_CAT_PRD_ENTT_ENTT_ID": true,
+            "MAGENDOO_PRODUCT_LABEL_ASSIGNMENT_STORE_ID_STORE_STORE_ID": true,
+            "MAGENDOO_PRODUCT_LABEL_ASSIGNMENT_LABEL_ID_PRODUCT_ID_STORE_ID": true
+        }
+    }
+}

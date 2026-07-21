@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Magendoo ProductLabels - Default configuration values
+ *
+ * @copyright Copyright (c) Magendoo (https://magendoo.com)
+ * @license   https://opensource.org/licenses/OSL-3.0 OSL-3.0
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <magendoo_productlabels>
+            <general>
+                <enabled>1</enabled>
+                <max_labels_per_product>2</max_labels_per_product>
+            </general>
+        </magendoo_productlabels>
+    </default>
+</config>

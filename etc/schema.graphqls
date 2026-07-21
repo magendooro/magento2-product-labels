@@ -1,0 +1,17 @@
+# Magendoo ProductLabels - GraphQL schema
+#
+# Copyright (c) Magendoo (https://magendoo.com)
+# License: OSL-3.0
+
+interface ProductInterface {
+    magendoo_labels: [MagendooProductLabel] @doc(description: "Active product labels (manual and rule-computed) for the current store view.") @resolver(class: "Magendoo\\ProductLabels\\Model\\Resolver\\ProductLabels")
+}
+
+type MagendooProductLabel @doc(description: "A product label badge. `code` is the stable cross-system identifier.") {
+    code: String! @doc(description: "Stable label code, e.g. sale, new-arrival.")
+    text: String @doc(description: "Display text for the current store view.")
+    text_color: String @doc(description: "Badge text color as a hex value.")
+    background_color: String @doc(description: "Badge background color as a hex value.")
+    position: String @doc(description: "Badge corner: top-left, top-right, bottom-left or bottom-right.")
+    priority: Int @doc(description: "Render priority; lower renders first.")
+}

@@ -1,0 +1,39 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Magendoo ProductLabels - System configuration
+ *
+ * @copyright Copyright (c) Magendoo (https://magendoo.com)
+ * @license   https://opensource.org/licenses/OSL-3.0 OSL-3.0
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Config:etc/system_file.xsd">
+    <system>
+        <tab id="magendoo" translate="label" sortOrder="100">
+            <label>Magendoo</label>
+        </tab>
+        <section id="magendoo_productlabels" translate="label" type="text" sortOrder="300"
+                 showInDefault="1" showInWebsite="1" showInStore="1">
+            <label>Product Labels</label>
+            <tab>magendoo</tab>
+            <resource>Magendoo_ProductLabels::config</resource>
+            <group id="general" translate="label" type="text" sortOrder="10"
+                   showInDefault="1" showInWebsite="1" showInStore="1">
+                <label>General</label>
+                <field id="enabled" translate="label comment" type="select" sortOrder="10"
+                       showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Enable Labels</label>
+                    <comment>Render label badges on the storefront for this scope.</comment>
+                    <source_model>Magento\Config\Model\Config\Source\Yesno</source_model>
+                </field>
+                <field id="max_labels_per_product" translate="label comment" type="text" sortOrder="20"
+                       showInDefault="1" showInWebsite="1" showInStore="1" canRestore="1">
+                    <label>Maximum Labels Per Product</label>
+                    <comment>Highest-priority labels win. Use 0 for unlimited.</comment>
+                    <validate>validate-digits</validate>
+                </field>
+            </group>
+        </section>
+    </system>
+</config>

@@ -1,0 +1,298 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+/**
+ * Magendoo ProductLabels - Label edit form UI component
+ *
+ * @copyright Copyright (c) Magendoo (https://magendoo.com)
+ * @license   https://opensource.org/licenses/OSL-3.0 OSL-3.0
+ */
+-->
+<form xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+      xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Ui:etc/ui_configuration.xsd">
+    <argument name="data" xsi:type="array">
+        <item name="js_config" xsi:type="array">
+            <item name="provider" xsi:type="string">magendoo_productlabels_label_form.label_form_data_source</item>
+        </item>
+        <item name="label" xsi:type="string" translate="true">Label Information</item>
+        <item name="template" xsi:type="string">templates/form/collapsible</item>
+    </argument>
+    <settings>
+        <buttons>
+            <button name="back" class="Magendoo\ProductLabels\Block\Adminhtml\Label\Edit\BackButton"/>
+            <button name="delete" class="Magendoo\ProductLabels\Block\Adminhtml\Label\Edit\DeleteButton"/>
+            <button name="save" class="Magendoo\ProductLabels\Block\Adminhtml\Label\Edit\SaveButton"/>
+        </buttons>
+        <namespace>magendoo_productlabels_label_form</namespace>
+        <dataScope>data</dataScope>
+        <deps>
+            <dep>magendoo_productlabels_label_form.label_form_data_source</dep>
+        </deps>
+    </settings>
+    <dataSource name="label_form_data_source">
+        <argument name="data" xsi:type="array">
+            <item name="js_config" xsi:type="array">
+                <item name="component" xsi:type="string">Magento_Ui/js/form/provider</item>
+            </item>
+        </argument>
+        <settings>
+            <submitUrl path="magendoo_productlabels/label/save"/>
+        </settings>
+        <dataProvider class="Magendoo\ProductLabels\Ui\DataProvider\Form\LabelDataProvider"
+                      name="label_form_data_source">
+            <settings>
+                <requestFieldName>label_id</requestFieldName>
+                <primaryFieldName>label_id</primaryFieldName>
+            </settings>
+        </dataProvider>
+    </dataSource>
+    <fieldset name="general">
+        <settings>
+            <label translate="true">General</label>
+        </settings>
+        <field name="label_id" formElement="input">
+            <settings>
+                <dataType>text</dataType>
+                <visible>false</visible>
+            </settings>
+        </field>
+        <field name="code" formElement="input">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Code</label>
+                <notice translate="true">Stable identifier used by integrations and GraphQL. Lowercase letters, digits, "_" and "-" only. Cannot repeat.</notice>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+        </field>
+        <field name="name" formElement="input">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Name</label>
+                <notice translate="true">Internal name shown in the admin only.</notice>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+        </field>
+        <field name="is_active" formElement="checkbox">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="number">1</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>boolean</dataType>
+                <label translate="true">Active</label>
+            </settings>
+            <formElements>
+                <checkbox>
+                    <settings>
+                        <valueMap>
+                            <map name="false" xsi:type="number">0</map>
+                            <map name="true" xsi:type="number">1</map>
+                        </valueMap>
+                        <prefer>toggle</prefer>
+                    </settings>
+                </checkbox>
+            </formElements>
+        </field>
+        <field name="priority" formElement="input">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="number">0</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Priority</label>
+                <notice translate="true">Lower values render first when a product has several labels.</notice>
+                <validation>
+                    <rule name="validate-number" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+        </field>
+    </fieldset>
+    <fieldset name="display">
+        <settings>
+            <label translate="true">Display</label>
+        </settings>
+        <field name="label_text" formElement="input">
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Label Text</label>
+                <notice translate="true">Default storefront text. Add per-store-view overrides below.</notice>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+        </field>
+        <field name="background_color" formElement="input">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="string">#E02B27</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Background Color</label>
+                <notice translate="true">6-digit hex value, e.g. #E02B27.</notice>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+        </field>
+        <field name="text_color" formElement="input">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="string">#FFFFFF</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Text Color</label>
+                <notice translate="true">6-digit hex value, e.g. #FFFFFF.</notice>
+                <validation>
+                    <rule name="required-entry" xsi:type="boolean">true</rule>
+                </validation>
+            </settings>
+        </field>
+        <field name="position" formElement="select">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="string">top-left</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Position</label>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Magendoo\ProductLabels\Model\Label\Source\Position"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+        <field name="show_on_plp" formElement="checkbox">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="number">1</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>boolean</dataType>
+                <label translate="true">Show on Product Listings</label>
+            </settings>
+            <formElements>
+                <checkbox>
+                    <settings>
+                        <valueMap>
+                            <map name="false" xsi:type="number">0</map>
+                            <map name="true" xsi:type="number">1</map>
+                        </valueMap>
+                        <prefer>toggle</prefer>
+                    </settings>
+                </checkbox>
+            </formElements>
+        </field>
+        <field name="show_on_pdp" formElement="checkbox">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="number">1</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>boolean</dataType>
+                <label translate="true">Show on Product Page</label>
+            </settings>
+            <formElements>
+                <checkbox>
+                    <settings>
+                        <valueMap>
+                            <map name="false" xsi:type="number">0</map>
+                            <map name="true" xsi:type="number">1</map>
+                        </valueMap>
+                        <prefer>toggle</prefer>
+                    </settings>
+                </checkbox>
+            </formElements>
+        </field>
+        <dynamicRows name="store_overrides">
+            <settings>
+                <addButtonLabel translate="true">Add Store View Override</addButtonLabel>
+                <additionalClasses>
+                    <class name="admin__field-wide">true</class>
+                </additionalClasses>
+                <componentType>dynamicRows</componentType>
+                <label translate="true">Store View Text Overrides</label>
+            </settings>
+            <container name="record" component="Magento_Ui/js/dynamic-rows/record">
+                <argument name="data" xsi:type="array">
+                    <item name="config" xsi:type="array">
+                        <item name="isTemplate" xsi:type="boolean">true</item>
+                        <item name="is_collection" xsi:type="boolean">true</item>
+                        <item name="componentType" xsi:type="string">container</item>
+                    </item>
+                </argument>
+                <field name="store_id" formElement="select" sortOrder="10">
+                    <settings>
+                        <dataType>text</dataType>
+                        <label translate="true">Store View</label>
+                        <validation>
+                            <rule name="required-entry" xsi:type="boolean">true</rule>
+                        </validation>
+                    </settings>
+                    <formElements>
+                        <select>
+                            <settings>
+                                <options class="Magento\Store\Ui\Component\Listing\Column\Store\Options"/>
+                            </settings>
+                        </select>
+                    </formElements>
+                </field>
+                <field name="label_text" formElement="input" sortOrder="20">
+                    <settings>
+                        <dataType>text</dataType>
+                        <label translate="true">Text</label>
+                        <validation>
+                            <rule name="required-entry" xsi:type="boolean">true</rule>
+                        </validation>
+                    </settings>
+                </field>
+                <actionDelete sortOrder="30">
+                    <settings>
+                        <componentType>actionDelete</componentType>
+                        <dataType>text</dataType>
+                        <label translate="true">Actions</label>
+                    </settings>
+                </actionDelete>
+            </container>
+        </dynamicRows>
+    </fieldset>
+    <fieldset name="rule">
+        <settings>
+            <label translate="true">Automatic Assignment</label>
+        </settings>
+        <field name="rule_type" formElement="select">
+            <argument name="data" xsi:type="array">
+                <item name="config" xsi:type="array">
+                    <item name="default" xsi:type="string">none</item>
+                </item>
+            </argument>
+            <settings>
+                <dataType>text</dataType>
+                <label translate="true">Rule</label>
+                <notice translate="true">Computed assignments are recalculated by the Product Labels indexer and never overwrite manual selections made on the product form.</notice>
+            </settings>
+            <formElements>
+                <select>
+                    <settings>
+                        <options class="Magendoo\ProductLabels\Model\Label\Source\RuleType"/>
+                    </settings>
+                </select>
+            </formElements>
+        </field>
+    </fieldset>
+</form>

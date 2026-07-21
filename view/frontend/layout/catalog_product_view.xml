@@ -1,0 +1,20 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Magendoo ProductLabels - PDP badge overlay
+ *
+ * @copyright Copyright (c) Magendoo (https://magendoo.com)
+ * @license   https://opensource.org/licenses/OSL-3.0 OSL-3.0
+ */
+-->
+<page xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" layout="1column"
+      xsi:noNamespaceSchemaLocation="urn:magento:framework:View/Layout/etc/page_configuration.xsd">
+    <body>
+        <referenceContainer name="product.info.media">
+            <block class="Magendoo\ProductLabels\Block\Product\Labels"
+                   name="magendoo.productlabels.badges"
+                   template="Magendoo_ProductLabels::product/labels.phtml"
+                   after="-"/>
+        </referenceContainer>
+    </body>
+</page>

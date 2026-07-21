@@ -1,0 +1,27 @@
+<?xml version="1.0"?>
+<!--
+/**
+ * Magendoo ProductLabels - Materialized view (changelog) configuration
+ *
+ * The changelog holds PRODUCT entity ids. The subscribed tables cover what the
+ * two R1 rule types read: news_from/to and special_price/from/to live in the
+ * datetime and decimal value tables; catalog_product_entity covers creates.
+ * Label-definition changes are handled by indexer invalidation in the
+ * repository, not by this view.
+ *
+ * @copyright Copyright (c) Magendoo (https://magendoo.com)
+ * @license   https://opensource.org/licenses/OSL-3.0 OSL-3.0
+ */
+-->
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:framework:Mview/etc/mview.xsd">
+    <view id="magendoo_product_labels"
+          class="Magendoo\ProductLabels\Model\Indexer\LabelAssignment"
+          group="indexer">
+        <subscriptions>
+            <table name="catalog_product_entity" entity_column="entity_id"/>
+            <table name="catalog_product_entity_datetime" entity_column="entity_id"/>
+            <table name="catalog_product_entity_decimal" entity_column="entity_id"/>
+        </subscriptions>
+    </view>
+</config>
