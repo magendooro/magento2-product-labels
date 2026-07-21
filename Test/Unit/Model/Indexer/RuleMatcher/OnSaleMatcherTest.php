@@ -90,8 +90,9 @@ class OnSaleMatcherTest extends TestCase
     {
         $this->assertSame([5, 7], $this->matcher->getMatchingProductIds(1));
         $this->assertContains(
-            'IF(sp_s.value_id IS NOT NULL, sp_s.value, sp_d.value) '
-            . '< IF(pr_s.value_id IS NOT NULL, pr_s.value, pr_d.value)',
+            "(e.type_id = 'bundle' AND IF(sp_s.value_id IS NOT NULL, sp_s.value, sp_d.value) < 100)"
+            . " OR (e.type_id <> 'bundle' AND IF(sp_s.value_id IS NOT NULL, sp_s.value, sp_d.value)"
+            . ' < IF(pr_s.value_id IS NOT NULL, pr_s.value, pr_d.value))',
             $this->whereConditions
         );
         $this->assertContains(
