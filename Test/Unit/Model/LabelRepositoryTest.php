@@ -17,9 +17,16 @@ use Magendoo\ProductLabels\Model\LabelFactory;
 use Magendoo\ProductLabels\Model\LabelRepository;
 use Magendoo\ProductLabels\Model\ResourceModel\Label as LabelResource;
 use Magendoo\ProductLabels\Model\ResourceModel\Label\CollectionFactory;
+use Magento\Catalog\Model\Product;
+use Magento\Eav\Model\Config as EavConfig;
+use Magento\Eav\Model\Entity\Attribute\AbstractAttribute;
 use Magento\Framework\Api\SearchCriteria\CollectionProcessorInterface;
+use Magento\Framework\DB\Adapter\AdapterInterface;
+use Magento\Framework\DB\Select;
+use Magento\Framework\Event\ManagerInterface as EventManagerInterface;
 use Magento\Framework\Exception\CouldNotSaveException;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Indexer\CacheContext;
 use Magento\Framework\Indexer\IndexerInterface;
 use Magento\Framework\Indexer\IndexerRegistry;
 use Magento\Framework\TestFramework\Unit\Helper\ObjectManager as ObjectManagerHelper;
@@ -35,6 +42,28 @@ class LabelRepositoryTest extends TestCase
     private LabelFactory|MockObject $labelFactory;
     private IndexerRegistry|MockObject $indexerRegistry;
     private IndexerInterface|MockObject $indexer;
+
+    /**
+     * EAV config; getAttribute() returns null by default so the flush guard exits early.
+     *
+     * @var EavConfig|MockObject
+     */
+    private EavConfig|MockObject $eavConfig;
+
+    /**
+     * Cache context collecting the product ids whose pages must flush.
+     *
+     * @var CacheContext|MockObject
+     */
+    private CacheContext|MockObject $cacheContext;
+
+    /**
+     * Event manager dispatching clean_cache_by_tags.
+     *
+     * @var EventManagerInterface|MockObject
+     */
+    private EventManagerInterface|MockObject $eventManager;
+
     private LabelRepository $repository;
 
     protected function setUp(): void
@@ -46,6 +75,9 @@ class LabelRepositoryTest extends TestCase
             ->getMock();
         $this->indexerRegistry = $this->createMock(IndexerRegistry::class);
         $this->indexer = $this->createMock(IndexerInterface::class);
+        $this->eavConfig = $this->createMock(EavConfig::class);
+        $this->cacheContext = $this->createMock(CacheContext::class);
+        $this->eventManager = $this->createMock(EventManagerInterface::class);
         $this->repository = new LabelRepository(
             $this->resource,
             $this->labelFactory,
@@ -54,7 +86,10 @@ class LabelRepositoryTest extends TestCase
             $this->getMockBuilder(LabelSearchResultsInterfaceFactory::class)
                 ->disableOriginalConstructor()->onlyMethods(['create'])->getMock(),
             $this->createMock(CollectionProcessorInterface::class),
-            $this->indexerRegistry
+            $this->indexerRegistry,
+            $this->eavConfig,
+            $this->cacheContext,
+            $this->eventManager
         );
     }
 
@@ -158,5 +193,73 @@ class LabelRepositoryTest extends TestCase
         $this->indexerRegistry->expects($this->once())->method('get')->willReturn($this->indexer);
         $this->indexer->expects($this->once())->method('invalidate');
         $this->assertTrue($this->repository->delete($label));
+    }
+
+    public function testVisibilityTransitionFlushesManualAssigneePages(): void
+    {
+        $label = $this->newLabel([
+            LabelInterface::LABEL_ID => 4,
+            LabelInterface::RULE_TYPE => 'none',
+            LabelInterface::IS_ACTIVE => 0,
+            LabelInterface::SHOW_ON_PLP => 1,
+            LabelInterface::SHOW_ON_PDP => 1,
+        ]);
+        $label->setOrigData(null, null);
+        $label->setOrigData(LabelInterface::LABEL_ID, 4);
+        $label->setOrigData(LabelInterface::RULE_TYPE, 'none');
+        $label->setOrigData(LabelInterface::IS_ACTIVE, 1);
+        $label->setOrigData(LabelInterface::SHOW_ON_PLP, 1);
+        $label->setOrigData(LabelInterface::SHOW_ON_PDP, 1);
+
+        $attribute = $this->createMock(AbstractAttribute::class);
+        $attribute->method('getAttributeId')->willReturn(123);
+        $this->eavConfig->method('getAttribute')->willReturn($attribute);
+
+        $select = $this->createMock(Select::class);
+        $select->method('from')->willReturnSelf();
+        $select->method('where')->willReturnSelf();
+        $connection = $this->createMock(AdapterInterface::class);
+        $connection->method('select')->willReturn($select);
+        $connection->method('fetchCol')->willReturn(['7', '9']);
+        $this->resource->method('getConnection')->willReturn($connection);
+        $this->resource->method('getTable')
+            ->with('catalog_product_entity_varchar')
+            ->willReturn('catalog_product_entity_varchar');
+        $this->resource->method('save')->willReturnSelf();
+
+        $this->cacheContext->expects($this->once())
+            ->method('registerEntities')
+            ->with(Product::CACHE_TAG, [7, 9]);
+        $this->eventManager->expects($this->once())
+            ->method('dispatch')
+            ->with('clean_cache_by_tags', ['object' => $this->cacheContext]);
+
+        $this->repository->save($label);
+    }
+
+    public function testDisplayOnlyEditDoesNotFlush(): void
+    {
+        $label = $this->newLabel([
+            LabelInterface::LABEL_ID => 4,
+            LabelInterface::RULE_TYPE => 'none',
+            LabelInterface::IS_ACTIVE => 1,
+            LabelInterface::SHOW_ON_PLP => 1,
+            LabelInterface::SHOW_ON_PDP => 1,
+            LabelInterface::LABEL_TEXT => 'New text',
+        ]);
+        $label->setOrigData(null, null);
+        $label->setOrigData(LabelInterface::LABEL_ID, 4);
+        $label->setOrigData(LabelInterface::RULE_TYPE, 'none');
+        $label->setOrigData(LabelInterface::IS_ACTIVE, 1);
+        $label->setOrigData(LabelInterface::SHOW_ON_PLP, 1);
+        $label->setOrigData(LabelInterface::SHOW_ON_PDP, 1);
+        $label->setOrigData(LabelInterface::LABEL_TEXT, 'Old text');
+
+        $this->resource->method('save')->willReturnSelf();
+
+        $this->cacheContext->expects($this->never())->method('registerEntities');
+        $this->eventManager->expects($this->never())->method('dispatch');
+
+        $this->repository->save($label);
     }
 }

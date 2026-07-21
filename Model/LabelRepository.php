@@ -17,11 +17,16 @@ use Magendoo\ProductLabels\Api\LabelRepositoryInterface;
 use Magendoo\ProductLabels\Model\Indexer\LabelAssignment as LabelAssignmentIndexer;
 use Magendoo\ProductLabels\Model\ResourceModel\Label as LabelResource;
 use Magendoo\ProductLabels\Model\ResourceModel\Label\CollectionFactory;
+use Magendoo\ProductLabels\Setup\Patch\Data\AddProductLabelsAttribute;
+use Magento\Catalog\Model\Product;
+use Magento\Eav\Model\Config as EavConfig;
 use Magento\Framework\Api\SearchCriteria\CollectionProcessorInterface;
 use Magento\Framework\Api\SearchCriteriaInterface;
 use Magento\Framework\Exception\CouldNotDeleteException;
 use Magento\Framework\Exception\CouldNotSaveException;
+use Magento\Framework\Event\ManagerInterface as EventManagerInterface;
 use Magento\Framework\Exception\NoSuchEntityException;
+use Magento\Framework\Indexer\CacheContext;
 use Magento\Framework\Indexer\IndexerRegistry;
 
 class LabelRepository implements LabelRepositoryInterface
@@ -33,6 +38,9 @@ class LabelRepository implements LabelRepositoryInterface
      * @param LabelSearchResultsInterfaceFactory $searchResultsFactory
      * @param CollectionProcessorInterface $collectionProcessor
      * @param IndexerRegistry $indexerRegistry
+     * @param EavConfig $eavConfig
+     * @param CacheContext $cacheContext
+     * @param EventManagerInterface $eventManager
      */
     public function __construct(
         private readonly LabelResource $resource,
@@ -40,7 +48,10 @@ class LabelRepository implements LabelRepositoryInterface
         private readonly CollectionFactory $collectionFactory,
         private readonly LabelSearchResultsInterfaceFactory $searchResultsFactory,
         private readonly CollectionProcessorInterface $collectionProcessor,
-        private readonly IndexerRegistry $indexerRegistry
+        private readonly IndexerRegistry $indexerRegistry,
+        private readonly EavConfig $eavConfig,
+        private readonly CacheContext $cacheContext,
+        private readonly EventManagerInterface $eventManager
     ) {
     }
 
@@ -51,6 +62,7 @@ class LabelRepository implements LabelRepositoryInterface
     {
         /** @var Label $label */
         $needsReindex = $this->affectsComputedAssignments($label);
+        $visibilityChanged = $this->visibilityChanged($label);
         try {
             $this->resource->save($label);
         } catch (\Exception $e) {
@@ -58,6 +70,9 @@ class LabelRepository implements LabelRepositoryInterface
         }
         if ($needsReindex) {
             $this->invalidateIndexer();
+        }
+        if ($visibilityChanged) {
+            $this->flushManualAssigneePages((int)$label->getId());
         }
         return $label;
     }
@@ -150,6 +165,57 @@ class LabelRepository implements LabelRepositoryInterface
         }
         $activeChanged = (bool)$label->getOrigData(LabelInterface::IS_ACTIVE) !== $label->isActive();
         return $activeChanged && $ruleType !== LabelInterface::RULE_TYPE_NONE;
+    }
+
+    /**
+     * Whether this save switches the label's storefront visibility on or off.
+     *
+     * Display-only edits are covered by the label's own identity tag on the
+     * pages that rendered it; visibility TRANSITIONS also affect pages that
+     * did NOT render it, which carry no such tag.
+     *
+     * @param Label $label
+     * @return bool
+     */
+    private function visibilityChanged(Label $label): bool
+    {
+        if ($label->isObjectNew() || $label->getOrigData(LabelInterface::LABEL_ID) === null) {
+            return false;
+        }
+        return (bool)$label->getOrigData(LabelInterface::IS_ACTIVE) !== $label->isActive()
+            || (bool)$label->getOrigData(LabelInterface::SHOW_ON_PLP) !== $label->isShowOnPlp()
+            || (bool)$label->getOrigData(LabelInterface::SHOW_ON_PDP) !== $label->isShowOnPdp();
+    }
+
+    /**
+     * Flush the cached pages of every product manually assigned to a label.
+     *
+     * Manual assignments live on the global (store 0) row of the
+     * magendoo_product_labels attribute; one FIND_IN_SET lookup finds the
+     * assignees so their PDP/listing pages flush immediately (computed
+     * assignees are flushed by the indexer diff sync after the invalidation).
+     *
+     * @param int $labelId
+     * @return void
+     */
+    private function flushManualAssigneePages(int $labelId): void
+    {
+        $attribute = $this->eavConfig->getAttribute(Product::ENTITY, AddProductLabelsAttribute::ATTRIBUTE_CODE);
+        if (!$attribute || !$attribute->getAttributeId()) {
+            return;
+        }
+        $connection = $this->resource->getConnection();
+        $select = $connection->select()
+            ->from($this->resource->getTable('catalog_product_entity_varchar'), ['entity_id'])
+            ->where('attribute_id = ?', (int)$attribute->getAttributeId())
+            ->where('store_id = ?', 0)
+            ->where('FIND_IN_SET(?, value)', (string)$labelId);
+        $productIds = array_map('intval', $connection->fetchCol($select));
+        if (!$productIds) {
+            return;
+        }
+        $this->cacheContext->registerEntities(Product::CACHE_TAG, $productIds);
+        $this->eventManager->dispatch('clean_cache_by_tags', ['object' => $this->cacheContext]);
     }
 
     /**
