@@ -21,7 +21,14 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Config::class)]
 class ConfigTest extends TestCase
 {
+    /**
+     * @var ScopeConfigInterface|MockObject
+     */
     private ScopeConfigInterface|MockObject $scopeConfig;
+
+    /**
+     * @var Config
+     */
     private Config $config;
 
     protected function setUp(): void

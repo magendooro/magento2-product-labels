@@ -154,7 +154,7 @@ class LabelResolver
     /**
      * Overlay per-store text overrides onto collection-loaded labels
      *
-     * @param array<int, Label> $labels
+     * @param array $labels
      * @param int $storeId
      * @return void
      */

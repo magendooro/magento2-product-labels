@@ -80,9 +80,10 @@ class LabelAssignment implements
     }
 
     /**
-     * Mview entry point: $ids are product entity IDs from the changelog
+     * Mview entry point: rebuild computed assignments for the changed product ids.
      *
-     * @inheritdoc
+     * @param int[] $ids
+     * @return void
      */
     public function execute($ids)
     {
@@ -177,8 +178,8 @@ class LabelAssignment implements
     /**
      * Drop assignment rows whose label is gone, inactive, or manual-only now
      *
-     * @param array<int, string> $computedLabels
-     * @param array<int, bool> $changedProductIds accumulates affected products
+     * @param array $computedLabels
+     * @param array $changedProductIds accumulates affected products
      * @return void
      */
     private function purgeStaleLabels(array $computedLabels, array &$changedProductIds): void

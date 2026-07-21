@@ -1,7 +1,7 @@
 //
 //  Magendoo ProductLabels - badge styles
 //
-//  Copyright (c) Magendoo (https://magendoo.com)
+//  Copyright (c) Magendoo (magendoo.com)
 //  License: OSL-3.0
 //
 
@@ -11,18 +11,18 @@
 
 & when (@media-common = true) {
     .magendoo-product-labels {
-        position: absolute;
-        top: 0;
-        right: 0;
         bottom: 0;
         left: 0;
         pointer-events: none;
+        position: absolute;
+        right: 0;
+        top: 0;
         z-index: 5;
     }
 
     .product-image-container.magendoo-has-labels {
-        position: relative;
         display: inline-block;
+        position: relative;
 
         .magendoo-product-labels {
             display: block;
@@ -38,50 +38,50 @@
     }
 
     .magendoo-pl-corner {
-        position: absolute;
         display: flex;
         flex-direction: column;
         gap: 4px;
         max-width: 60%;
+        position: absolute;
 
         &.magendoo-pl-top-left {
-            top: 8px;
-            left: 8px;
             align-items: flex-start;
+            left: 8px;
+            top: 8px;
         }
 
         &.magendoo-pl-top-right {
-            top: 8px;
-            right: 8px;
             align-items: flex-end;
+            right: 8px;
+            top: 8px;
         }
 
         &.magendoo-pl-bottom-left {
+            align-items: flex-start;
             bottom: 8px;
             left: 8px;
-            align-items: flex-start;
         }
 
         &.magendoo-pl-bottom-right {
+            align-items: flex-end;
             bottom: 8px;
             right: 8px;
-            align-items: flex-end;
         }
     }
 
     .magendoo-product-label {
-        display: inline-block;
-        padding: 2px 8px;
         border-radius: 2px;
+        display: inline-block;
         font-size: 1.2rem;
         font-weight: 600;
-        line-height: 1.6;
         letter-spacing: .5px;
+        line-height: 1.6;
+        max-width: 100%;
+        overflow: hidden;
+        padding: 2px 8px;
+        text-overflow: ellipsis;
         text-transform: uppercase;
         white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        max-width: 100%;
     }
 
     .magendoo-product-labels-pdp .magendoo-product-label {

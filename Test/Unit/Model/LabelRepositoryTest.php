@@ -38,9 +38,24 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(LabelRepository::class)]
 class LabelRepositoryTest extends TestCase
 {
+    /**
+     * @var LabelResource|MockObject
+     */
     private LabelResource|MockObject $resource;
+
+    /**
+     * @var LabelFactory|MockObject
+     */
     private LabelFactory|MockObject $labelFactory;
+
+    /**
+     * @var IndexerRegistry|MockObject
+     */
     private IndexerRegistry|MockObject $indexerRegistry;
+
+    /**
+     * @var IndexerInterface|MockObject
+     */
     private IndexerInterface|MockObject $indexer;
 
     /**
@@ -64,6 +79,9 @@ class LabelRepositoryTest extends TestCase
      */
     private EventManagerInterface|MockObject $eventManager;
 
+    /**
+     * @var LabelRepository
+     */
     private LabelRepository $repository;
 
     protected function setUp(): void

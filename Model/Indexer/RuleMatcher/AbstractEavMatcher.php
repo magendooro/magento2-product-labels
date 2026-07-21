@@ -89,8 +89,7 @@ abstract class AbstractEavMatcher implements MatcherInterface
     }
 
     /**
-     * Current date-time in the store's timezone, for comparing against EAV
-     * date values (which Magento stores as store-local wall-clock times).
+     * Current store-local date-time, for comparing against store-local EAV date values
      *
      * @param int $storeId
      * @return string Y-m-d H:i:s
@@ -101,6 +100,8 @@ abstract class AbstractEavMatcher implements MatcherInterface
     }
 
     /**
+     * Default connection used for all matcher queries
+     *
      * @return AdapterInterface
      */
     protected function getConnection(): AdapterInterface
