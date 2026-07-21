@@ -145,9 +145,10 @@ placement, ordered by priority, and capped by *Maximum Labels Per Product*.
 }
 ```
 
-`magendoo_labels` returns all active labels assigned to the product for the current store view
-(placement flags are not applied — a headless client decides placement itself). The resolver is
-batched: one preload serves every product in the query.
+`magendoo_labels` returns the product's active labels for the current store view, ordered by
+priority and capped by *Maximum Labels Per Product*; it returns nothing when *Enable Labels* is
+off for that store view. Placement flags are not applied — a headless client decides placement
+itself. The resolver is batched: one preload serves every product in the query.
 
 ## Extending: custom rule types
 
@@ -176,9 +177,12 @@ and register it under a new rule-type key:
 </type>
 ```
 
-(Adding the new value to the rule-type source model/validation additionally requires a small
-preference or plugin on `Magendoo\ProductLabels\Model\Label\Source\RuleType`; treat this
-extension point as developer-level in Release 1.)
+(Release 1 constraint: saving a label with a custom rule type is blocked by validation — the
+resource model checks the built-in list from `Label::getAvailableRuleTypes()`, so besides
+extending the `Magendoo\ProductLabels\Model\Label\Source\RuleType` dropdown options you
+currently need a preference on `Magendoo\ProductLabels\Model\ResourceModel\Label` to accept the
+new value. Making both honor DI-registered matchers automatically is planned; treat this
+extension point as developer-level for now.)
 
 When working with a loaded label programmatically, `Label::getStoreOverrides()` and
 `Label::getTextForStore($storeId)` expose the per-store-view text overrides; the storefront
