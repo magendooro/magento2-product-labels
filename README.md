@@ -15,8 +15,10 @@ stable code — not by ad-hoc attribute options.
   product form (a multiselect attribute the module never writes). Rule-computed assignments are
   materialized by an indexer into a dedicated table. A rule recalculation can never overwrite a
   merchandiser's selection, and a product import can never wipe computed labels.
-- **The storefront reads materialized data only.** Rendering a listing costs two indexed lookups
-  for the whole page — no rule evaluation, no external calls in the render path.
+- **The storefront reads materialized data only.** Category and search listings are preloaded in
+  one batch — two indexed lookups for the whole page, no rule evaluation, no external calls in
+  the render path. Related/up-sell blocks and product widgets fall back to two lookups per tile
+  (batched preload for those surfaces is on the roadmap).
 
 ## Features
 
@@ -27,12 +29,15 @@ stable code — not by ad-hoc attribute options.
   (Product Details section, global scope).
 - Two built-in computed rules, recalculated by a real Magento indexer with MView change tracking:
   - **New products** — the product's *Set Product as New From/To* window is active.
-  - **On sale** — the product has an active special price window.
+  - **On sale** — the product has an active special price window and the special price is below
+    the regular price.
 - Luma rendering on category listings, search results and product pages (badge overlay,
   four corner positions, stacked when several labels share a corner).
 - GraphQL: `magendoo_labels` on every product in the `products` query.
-- Full-page-cache correct: label edits flush exactly the affected pages via cache identities;
-  assignment changes flush the affected products' pages.
+- Full-page-cache aware: pages carry identity tags for the labels they render, listing pages are
+  stamped with every label so visibility transitions flush in both directions, manual assignees'
+  product pages are flushed when a label's visibility changes, and the indexer flushes exactly
+  the products whose computed label set changed.
 
 | Product page | Admin form |
 |---|---|
@@ -84,7 +89,8 @@ Each label has:
 - **Position** — top-left, top-right, bottom-left or bottom-right corner of the product image.
 - **Show on Product Listings / Product Page** — per-placement visibility.
 - **Priority** — lower renders first; also decides which labels survive the per-product cap.
-- **Rule** — `None` (manual only), `New products`, or `On sale`.
+- **Rule** — `None` (manual only), `New products`, or `On sale` (special price below regular
+  price).
 
 ### Manual assignment
 
@@ -174,6 +180,10 @@ and register it under a new rule-type key:
 preference or plugin on `Magendoo\ProductLabels\Model\Label\Source\RuleType`; treat this
 extension point as developer-level in Release 1.)
 
+When working with a loaded label programmatically, `Label::getStoreOverrides()` and
+`Label::getTextForStore($storeId)` expose the per-store-view text overrides; the storefront
+resolver applies the same overrides via SQL for batching.
+
 ## Troubleshooting
 
 - **Badges don't show at all** — check *Enable Labels* for the store view, confirm the label is
@@ -181,6 +191,9 @@ extension point as developer-level in Release 1.)
 - **A rule-based label doesn't apply** — run
   `bin/magento indexer:reindex magendoo_product_labels` and check
   `bin/magento indexer:status`; in Update-by-Schedule mode make sure Magento's cron is running.
+- **A new store view shows no rule-based labels** — computed assignments are materialized per
+  store view; run `bin/magento indexer:reindex magendoo_product_labels` once after creating a
+  store view.
 - **A label shows on the product page but not in listings** — check its *Show on Product
   Listings* flag and the *Maximum Labels Per Product* cap (higher-priority labels win).
 - **Store-view text override ignored** — overrides apply per store view; confirm you added the
