@@ -10,35 +10,35 @@ declare(strict_types=1);
 
 namespace Magendoo\ProductLabels\Block\Cache;
 
-use Magendoo\ProductLabels\Model\Config;
 use Magendoo\ProductLabels\Model\Label;
-use Magendoo\ProductLabels\Model\LabelResolver;
+use Magendoo\ProductLabels\Model\ResourceModel\Label\CollectionFactory;
 use Magento\Framework\DataObject\IdentityInterface;
 use Magento\Framework\View\Element\AbstractBlock;
 use Magento\Framework\View\Element\Context;
-use Magento\Store\Model\StoreManagerInterface;
 
 /**
  * Renders nothing; exists only to stamp listing pages (category, search)
- * with the cache tags of every active label. Product tiles are rendered
+ * with the cache tags of every label definition. Product tiles are rendered
  * through the ImageFactory plugin, which cannot contribute page identities,
  * so without this block an edited label text/color would never flush
  * already-cached listing pages.
+ *
+ * Every definition — active AND inactive — is stamped: pages only carry
+ * tags for labels they rendered, so stamping only active labels meant a
+ * label being re-activated (or getting a placement flag enabled) flushed
+ * nothing. Stamping every definition makes listing pages flush on
+ * transitions in both directions.
  */
 class ActiveLabelIdentities extends AbstractBlock implements IdentityInterface
 {
     /**
      * @param Context $context
-     * @param LabelResolver $labelResolver
-     * @param Config $config
-     * @param StoreManagerInterface $storeManager
+     * @param CollectionFactory $collectionFactory
      * @param array $data
      */
     public function __construct(
         Context $context,
-        private readonly LabelResolver $labelResolver,
-        private readonly Config $config,
-        private readonly StoreManagerInterface $storeManager,
+        private readonly CollectionFactory $collectionFactory,
         array $data = []
     ) {
         parent::__construct($context, $data);
@@ -49,12 +49,8 @@ class ActiveLabelIdentities extends AbstractBlock implements IdentityInterface
      */
     public function getIdentities()
     {
-        $storeId = (int)$this->storeManager->getStore()->getId();
-        if (!$this->config->isEnabled($storeId)) {
-            return [];
-        }
         $identities = [];
-        foreach (array_keys($this->labelResolver->getActiveLabels($storeId)) as $labelId) {
+        foreach ($this->collectionFactory->create()->getAllIds() as $labelId) {
             $identities[] = Label::CACHE_TAG . '_' . $labelId;
         }
         return $identities;
