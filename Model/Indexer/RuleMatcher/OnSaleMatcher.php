@@ -15,7 +15,9 @@ namespace Magendoo\ProductLabels\Model\Indexer\RuleMatcher;
  * regular price and the special_from_date/special_to_date window is active.
  * Mirrors core special price semantics: the to-date is inclusive through the
  * end of that day, and a special price that does not undercut the regular
- * price is not a discount.
+ * price is not a discount. Bundle products store special_price as a
+ * percentage of the final price, so they are matched when the percentage is
+ * below 100 instead of by amount comparison.
  *
  * Known R1 limitation (documented): catalog price rule discounts are not
  * detected — only special prices.
@@ -35,7 +37,11 @@ class OnSaleMatcher extends AbstractEavMatcher
         $regular = $this->joinAttribute($select, 'price', $storeId, 'pr');
         $now = $this->getStoreNow($storeId);
         $select->where(sprintf('%s IS NOT NULL', $price));
-        $select->where(sprintf('%s < %s', $price, $regular));
+        $select->where(sprintf(
+            "(e.type_id = 'bundle' AND %1\$s < 100) OR (e.type_id <> 'bundle' AND %1\$s < %2\$s)",
+            $price,
+            $regular
+        ));
         $select->where(sprintf('(%s IS NULL OR %s <= ?)', $from, $from), $now);
         $select->where(sprintf('(%s IS NULL OR ? < %s + INTERVAL 1 DAY)', $to, $to), $now);
         return array_map('intval', $connection->fetchCol($select));
