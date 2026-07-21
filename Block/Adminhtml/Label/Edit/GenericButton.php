@@ -2,7 +2,7 @@
 /**
  * Magendoo ProductLabels - Shared edit-form button plumbing
  *
- * @copyright Copyright (c) Magendoo (https://magendoo.com)
+ * @copyright Copyright (c) Magendoo (https://magendoo.ro)
  * @license   https://opensource.org/licenses/OSL-3.0 OSL-3.0
  */
 

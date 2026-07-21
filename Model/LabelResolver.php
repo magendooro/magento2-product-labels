@@ -2,7 +2,7 @@
 /**
  * Magendoo ProductLabels - Storefront label resolution service
  *
- * @copyright Copyright (c) Magendoo (https://magendoo.com)
+ * @copyright Copyright (c) Magendoo (https://magendoo.ro)
  * @license   https://opensource.org/licenses/OSL-3.0 OSL-3.0
  */
 

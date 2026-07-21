@@ -205,4 +205,4 @@ resolver applies the same overrides via SQL for batching.
 
 ## License
 
-OSL-3.0. Copyright (c) Magendoo (https://magendoo.com).
+OSL-3.0. Copyright (c) Magendoo (https://magendoo.ro).

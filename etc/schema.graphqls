@@ -1,6 +1,6 @@
 # Magendoo ProductLabels - GraphQL schema
 #
-# Copyright (c) Magendoo (https://magendoo.com)
+# Copyright (c) Magendoo (https://magendoo.ro)
 # License: OSL-3.0
 
 interface ProductInterface {
