@@ -153,6 +153,17 @@ class LabelRepositoryTest extends TestCase
             $label->isObjectNew(true);
         }
         $this->resource->method('save')->willReturnSelf();
+        // Visibility transitions in the provider reach the assignee lookups;
+        // an empty result set keeps them side-effect free for these cases.
+        $select = $this->createMock(Select::class);
+        $select->method('from')->willReturnSelf();
+        $select->method('where')->willReturnSelf();
+        $select->method('distinct')->willReturnSelf();
+        $connection = $this->createMock(AdapterInterface::class);
+        $connection->method('select')->willReturn($select);
+        $connection->method('fetchCol')->willReturn([]);
+        $this->resource->method('getConnection')->willReturn($connection);
+        $this->resource->method('getTable')->willReturnArgument(0);
         if ($expectInvalidate) {
             $this->indexerRegistry->expects($this->once())->method('get')
                 ->with('magendoo_product_labels')->willReturn($this->indexer);
@@ -213,7 +224,7 @@ class LabelRepositoryTest extends TestCase
         $this->assertTrue($this->repository->delete($label));
     }
 
-    public function testVisibilityTransitionFlushesManualAssigneePages(): void
+    public function testVisibilityTransitionFlushesManualAndComputedAssigneePages(): void
     {
         $label = $this->newLabel([
             LabelInterface::LABEL_ID => 4,
@@ -236,18 +247,18 @@ class LabelRepositoryTest extends TestCase
         $select = $this->createMock(Select::class);
         $select->method('from')->willReturnSelf();
         $select->method('where')->willReturnSelf();
+        $select->method('distinct')->willReturnSelf();
         $connection = $this->createMock(AdapterInterface::class);
         $connection->method('select')->willReturn($select);
-        $connection->method('fetchCol')->willReturn(['7', '9']);
+        // First fetch: manual attribute assignees; second: assignment-table rows.
+        $connection->method('fetchCol')->willReturnOnConsecutiveCalls(['7', '9'], ['9', '11']);
         $this->resource->method('getConnection')->willReturn($connection);
-        $this->resource->method('getTable')
-            ->with('catalog_product_entity_varchar')
-            ->willReturn('catalog_product_entity_varchar');
+        $this->resource->method('getTable')->willReturnArgument(0);
         $this->resource->method('save')->willReturnSelf();
 
         $this->cacheContext->expects($this->once())
             ->method('registerEntities')
-            ->with(Product::CACHE_TAG, [7, 9]);
+            ->with(Product::CACHE_TAG, [7, 9, 11]);
         $this->eventManager->expects($this->once())
             ->method('dispatch')
             ->with('clean_cache_by_tags', ['object' => $this->cacheContext]);
