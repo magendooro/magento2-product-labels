@@ -19,6 +19,9 @@ use PHPUnit\Framework\TestCase;
 #[CoversClass(Label::class)]
 class LabelTest extends TestCase
 {
+    /**
+     * @var Label
+     */
     private Label $label;
 
     protected function setUp(): void

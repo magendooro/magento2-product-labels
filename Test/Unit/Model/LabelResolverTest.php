@@ -33,7 +33,14 @@ class LabelResolverTest extends TestCase
     private const STORE_ID = 1;
     private const PRODUCT_ID = 100;
 
+    /**
+     * @var Config|MockObject
+     */
     private Config|MockObject $config;
+
+    /**
+     * @var LabelResolver
+     */
     private LabelResolver $resolver;
 
     protected function setUp(): void

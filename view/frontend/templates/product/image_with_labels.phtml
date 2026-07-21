@@ -21,7 +21,8 @@ foreach ((array)$block->getData('magendoo_labels') as $labelRow) {
     $labelsByPosition[(string)$labelRow['position']][] = $labelRow;
 }
 ?>
-<span class="product-image-container magendoo-has-labels product-image-container-<?= /* @noEscape */ $block->getProductId() ?>">
+<span class="product-image-container magendoo-has-labels product-image-container-<?=
+    /* @noEscape */ $block->getProductId() ?>">
     <span class="product-image-wrapper">
         <img class="<?= $escaper->escapeHtmlAttr($block->getClass()) ?>"
             <?php foreach ($block->getCustomAttributes() as $name => $value): ?>
@@ -36,8 +37,12 @@ foreach ((array)$block->getData('magendoo_labels') as $labelRow) {
         <?php foreach ($labelsByPosition as $position => $labels): ?>
             <span class="magendoo-pl-corner magendoo-pl-<?= $escaper->escapeHtmlAttr($position) ?>">
                 <?php foreach ($labels as $labelRow): ?>
-                    <span class="magendoo-product-label magendoo-product-label-<?= $escaper->escapeHtmlAttr((string)$labelRow['code']) ?>"
-                          style="background-color: <?= $escaper->escapeHtmlAttr((string)$labelRow['background_color']) ?>; color: <?= $escaper->escapeHtmlAttr((string)$labelRow['text_color']) ?>;"><?= $escaper->escapeHtml((string)$labelRow['text']) ?></span>
+                    <span class="magendoo-product-label magendoo-product-label-<?=
+                        $escaper->escapeHtmlAttr((string)$labelRow['code']) ?>"
+                          style="background-color: <?=
+                              $escaper->escapeHtmlAttr((string)$labelRow['background_color']) ?>; color: <?=
+                              $escaper->escapeHtmlAttr((string)$labelRow['text_color']) ?>;"><?=
+                                  $escaper->escapeHtml((string)$labelRow['text']) ?></span>
                 <?php endforeach; ?>
             </span>
         <?php endforeach; ?>

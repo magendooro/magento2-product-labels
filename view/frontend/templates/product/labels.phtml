@@ -18,8 +18,11 @@ foreach ($block->getLabels() as $label) {
     <?php foreach ($labelsByPosition as $position => $labels): ?>
         <div class="magendoo-pl-corner magendoo-pl-<?= $escaper->escapeHtmlAttr($position) ?>">
             <?php foreach ($labels as $label): ?>
-                <span class="magendoo-product-label magendoo-product-label-<?= $escaper->escapeHtmlAttr($label->getCode()) ?>"
-                      style="background-color: <?= $escaper->escapeHtmlAttr($label->getBackgroundColor()) ?>; color: <?= $escaper->escapeHtmlAttr($label->getTextColor()) ?>;"
+                <span class="magendoo-product-label magendoo-product-label-<?=
+                    $escaper->escapeHtmlAttr($label->getCode()) ?>"
+                      style="background-color: <?=
+                          $escaper->escapeHtmlAttr($label->getBackgroundColor()) ?>; color: <?=
+                          $escaper->escapeHtmlAttr($label->getTextColor()) ?>;"
                       role="status"><?= $escaper->escapeHtml($label->getLabelText()) ?></span>
             <?php endforeach; ?>
         </div>
